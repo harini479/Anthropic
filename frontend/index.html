@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H-RAG Chat — Anthropic Knowledge Base</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.9"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" fill="none" opacity="0.7"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">H-RAG</span>
+                </div>
+                <p class="sidebar-subtitle">Anthropic Knowledge Base</p>
+            </div>
+
+            <!-- System Prompt Section -->
+            <div class="sidebar-section">
+                <button class="section-toggle" onclick="togglePromptEditor()" id="promptToggle">
+                    <span class="sidebar-label">System Prompt</span>
+                    <svg class="toggle-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+                <div class="prompt-editor-panel" id="promptPanel">
+                    <textarea
+                        id="systemPromptInput"
+                        class="prompt-textarea"
+                        placeholder="Loading system prompt..."
+                        rows="8"
+                    ></textarea>
+                    <div class="prompt-actions">
+                        <button class="prompt-btn prompt-btn-save" onclick="saveSystemPrompt()" id="savePromptBtn">
+                            Save
+                        </button>
+                        <button class="prompt-btn prompt-btn-reset" onclick="resetSystemPrompt()">
+                            Reset
+                        </button>
+                    </div>
+                    <div class="prompt-status" id="promptStatus"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-label">How it works</h3>
+                <div class="info-card">
+                    <div class="info-step">
+                        <span class="step-num">1</span>
+                        <span class="step-text">Search folder summaries</span>
+                    </div>
+                    <div class="info-step">
+                        <span class="step-num">2</span>
+                        <span class="step-text">Drill into relevant docs</span>
+                    </div>
+                    <div class="info-step">
+                        <span class="step-num">3</span>
+                        <span class="step-text">Retrieve precise chunks</span>
+                    </div>
+                    <div class="info-step">
+                        <span class="step-num">4</span>
+                        <span class="step-text">Generate cited answer</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-label">Try asking</h3>
+                <div class="suggestion-chips">
+                    <button class="chip" onclick="askSuggestion(this)">What is MCP?</button>
+                    <button class="chip" onclick="askSuggestion(this)">How does tool use work with Claude?</button>
+                    <button class="chip" onclick="askSuggestion(this)">Explain RAG and Agentic Search</button>
+                    <button class="chip" onclick="askSuggestion(this)">What are Claude Code skills?</button>
+                    <button class="chip" onclick="askSuggestion(this)">How to do prompt engineering?</button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="stats" id="stats">
+                    <span class="stat">920 chunks</span>
+                    <span class="stat-sep">&middot;</span>
+                    <span class="stat">13 docs</span>
+                    <span class="stat-sep">&middot;</span>
+                    <span class="stat">3 folders</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#grad1)" opacity="0.9"/>
+                            <path d="M2 17L12 22L22 17" stroke="url(#grad2)" stroke-width="2" fill="none" opacity="0.5"/>
+                            <path d="M2 12L12 17L22 12" stroke="url(#grad2)" stroke-width="2" fill="none" opacity="0.7"/>
+                            <defs>
+                                <linearGradient id="grad1" x1="2" y1="2" x2="22" y2="12">
+                                    <stop offset="0%" stop-color="#818cf8"/>
+                                    <stop offset="100%" stop-color="#c084fc"/>
+                                </linearGradient>
+                                <linearGradient id="grad2" x1="2" y1="12" x2="22" y2="22">
+                                    <stop offset="0%" stop-color="#818cf8"/>
+                                    <stop offset="100%" stop-color="#c084fc"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h1>Ask anything about Anthropic</h1>
+                    <p>Powered by Hierarchical RAG — searches through folder summaries, document summaries, then precise chunks to find the best answer.</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <form id="chatForm" class="chat-form" onsubmit="handleSubmit(event)">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="queryInput"
+                            placeholder="Ask a question about Claude, MCP, tools, prompts..."
+                            rows="1"
+                            autofocus
+                        ></textarea>
+                        <button type="submit" id="sendBtn" class="send-btn" title="Send">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
